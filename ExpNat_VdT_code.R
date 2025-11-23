@@ -178,5 +178,186 @@ plot(model_SvsD)
 
 summary(model_SvsD)
 
-# PCoA communauté ----
+# Communauté ----
+
+df_prop = Data
+
+
+df_prop$espece <- replace(df_prop$Famille,
+                          grepl("anec", df_prop$Famille, ignore.case = TRUE),
+                          "anécique") 
+
+df_prop <- df_prop %>%
+  select(-Famille) %>%
+  group_by(Placette, Replicat, espece) %>% #, Maturite) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(Placette, Replicat) %>%
+  mutate(prop = n / sum(n)) %>%
+  filter(espece != "ind")
+
+colnames(df_prop) = c("Placette", "replicat", "espece", "n", "prop" ) #, "maturite")
+
+df_prop = left_join(
+  df_prop,
+  Data %>%
+    select(Placette,Distance) %>%
+    distinct(Placette, Distance),
+  by = "Placette" 
+)
+
+
+### Communauté barplot ----
+
+ggplot(df_prop,
+       aes(x = replicat,
+           y = prop,
+           fill = espece #,       # couleur = espèce
+          # alpha = maturite)
+          )) + # luminosité = maturité
+  geom_bar(stat = "identity", color = "black") +
+  
+  facet_wrap(~ Placette, nrow = 1) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  
+  # ---- Échelle couleur par espèce (palette standard) ----
+scale_fill_brewer(name = "Gp. fonctionel", palette = "Set2") +
+  
+  # ---- Échelle alpha séparée pour maturité ----
+#scale_alpha_manual(
+#  name = "Maturité",
+ # values = c("non" = 0.5,  # juvénile = clair
+  #           "oui" = 1),   # mature = foncé
+  #labels = c("non" = "Juvénile",
+   #          "oui" = "Mature")
+#) +
+  
+  labs(
+    x = "Réplicat",
+    y = "Proportion",
+    title = "Composition spécifique par réplicat et placette" #\n(clair = juvénile, foncé = mature)"
+  ) +
+  theme_bw() +
+  theme(
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+
+### Comm. typique barplot ----
+
+df_prop_mean = df_prop %>%
+  group_by(Placette, espece) %>%
+  mutate(prop_mean = sum(prop)/3) %>%
+  ungroup %>%
+  distinct(Placette, espece, .keep_all = TRUE) %>%
+  select(Placette, espece, prop_mean)
+
+
+ggplot(df_prop_mean,
+       aes(x = Placette,
+           y = prop_mean,
+           fill = espece #,       # couleur = espèce
+           # alpha = maturite)
+       )) + # luminosité = maturité
+  geom_bar(stat = "identity", color = "black") +
+  labs(
+    x = "Réplicat",
+    y = "Proportion",
+    title = "Composition spécifique moyenne par réplicat et placette" #\n(clair = juvénile, foncé = mature)"
+  ) +
+  theme_bw() +
+  theme(
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+
+### Comm. modèle linéaire ----
+
+ggplot(data = df_prop %>%
+         filter(espece != "ind"))+
+  geom_point(aes(x = Distance,
+                 y = prop,
+                 colour = espece))+
+  geom_smooth(aes(x = Distance,
+                  y = prop,
+                  colour = espece,
+                  fill = espece),
+              se = TRUE,
+              method = "lm")+ 
+  facet_wrap(~ espece)+
+  labs(
+    x = "Distance",
+    y = "Proportion",
+    title = "Composition spécifique par réplicat et placette"
+  ) +
+  theme_bw() +
+  theme(
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+mdl_prop_dist = lm(data = df_prop,
+                   prop ~ Distance*espece)
+
+par(mfrow = c(2,2))
+plot(mdl_prop_dist)
+summary(mdl_prop_dist)
+
+
+#Vibrations dans le sol ----
+
+folder = "C:/Users/PC/Desktop/M2/S1/ExpNat/Moutarde_results.tar/Moutarde_results/Moutarde"
+files = list.files(folder, pattern = "\\.spec$",
+                   full.names = TRUE)
+data_list = lapply(files, read.table, header = FALSE)
+names(data_list) = tools::file_path_sans_ext(basename(files))
+
+data_list = lapply(data_list, function(df) {
+  colnames(df) = c("freq_Hz", "freq_mean", "freq_sd_inf", "freq_sd_sup")  
+  df
+}) 
+
+data_list <- Map(function(df, nom) {
+  df$nom_dataset <- nom  
+  df
+}, data_list, names(data_list))
+
+data_list = lapply(data_list, function(df) {
+  df$direction = substr(df$nom_dataset, nchar(df$nom_dataset), nchar(df$nom_dataset))  
+  df$malette = substr(df$nom_dataset, nchar(df$nom_dataset)-3, nchar(df$nom_dataset)-2)
+  df
+}) 
+
+data_vibrations = bind_rows(data_list)
+
+malettes = data.frame(
+  malette = c("40", "42", "43", "45"),
+  Placette = c("C", "B", "D", "A")
+)
+
+data_vibrations = left_join(
+  data_vibrations, malettes, by = "malette"
+)
+
+
+ggplot(data = data_vibrations)+
+  geom_ribbon(aes(x = freq_Hz,
+                  ymin = freq_sd_inf,
+                  ymax = freq_sd_sup,
+                  fill = Placette),
+              alpha = 0.4)+
+  geom_line(aes(x = freq_Hz,
+                y = freq_mean,
+                color = Placette))+
+  scale_y_log10()+
+  scale_x_log10()+
+  facet_wrap(~ direction)+
+  labs(
+    x = "log10(frequence Hz)",
+    y = "Energie (log10(m/Hz)",
+    title = "Spectre de puissance des vibration terrestres des placettes"
+  ) +
+  theme_bw() +
+  theme(
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
 
