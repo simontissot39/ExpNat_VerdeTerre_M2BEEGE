@@ -7,7 +7,7 @@ library(FSA)
 
 # Communautés selon distance ----
 
-Data = read.csv("C:/Users/PC/Desktop/M2/S1/ExpNat/ExpNat_VdT/Data terrain vdt - Feuille 1.csv")
+Data = read.csv("...path.../Data terrain vdt - Feuille 1.csv")
 
 Data_count = Data %>%
   group_by(Placette, Replicat) %>%
@@ -308,7 +308,7 @@ summary(mdl_prop_dist)
 
 #Vibrations dans le sol ----
 
-folder = "C:/Users/PC/Desktop/M2/S1/ExpNat/Moutarde_results.tar/Moutarde_results/Moutarde"
+folder = "...path.../Moutarde"
 files = list.files(folder, pattern = "\\.spec$",
                    full.names = TRUE)
 data_list = lapply(files, read.table, header = FALSE)
@@ -363,6 +363,7 @@ ggplot(data = data_vibrations)+
   theme(
     strip.text = element_text(size = 12, face = "bold")
   )
+
 
 
 
