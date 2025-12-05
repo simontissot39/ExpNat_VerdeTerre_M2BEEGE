@@ -1,4 +1,4 @@
-ID_falsche ,Placette,Replicat,Nb,ID,Distance,Taille(mm),ouiaturite,Maturite,Famille,Date,Observateur
+ID_faux,Placette,Replicat,Nb,ID,Distance,Taille(mm),ouiaturite,Maturite,Famille,Date,Observateur
 Aa1,A,a,1,Aa1,18,45,ouiature,oui,endoge,10/10/2025,Simon
 Aa2,A,a,2,Aa2,18,15,nonuvenile,non,ind,10/10/2025,Noe
 Aa3,A,a,3,Aa3,18,50,ouiature,oui,anecique_tete_noire,10/10/2025,Simon
@@ -517,4 +517,5 @@ Dc110,D,c,110,Dc110,174,20,nonuvenile,non,epige,16/10/25,Noe
 Dc111,D,c,111,Dc111,174,10,nonuvenile,non,epige,16/10/25,Noe
 Dc112,D,c,112,Dc112,174,10,nonuvenile,non,epige,16/10/25,Noe
 Dc113,D,c,113,Dc113,174,10,nonuvenile,non,endoge,16/10/25,Noe
+
 Dc114,D,c,114,Dc114,174,10,nonuvenile,non,epige,16/10/25,Noe
