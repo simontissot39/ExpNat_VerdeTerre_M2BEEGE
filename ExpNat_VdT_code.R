@@ -5,6 +5,8 @@ library(vegan)
 library(DescTools)
 library(FSA)
 
+# Communautés selon distance ----
+
 Data = read.csv("C:/Users/PC/Desktop/M2/S1/ExpNat/ExpNat_VdT/Data terrain vdt - Feuille 1.csv")
 
 Data_count = Data %>%
@@ -287,7 +289,9 @@ ggplot(data = df_prop %>%
   labs(
     x = "Distance",
     y = "Proportion",
-    title = "Composition spécifique par réplicat et placette"
+    title = "Composition spécifique par réplicat et placette",
+    color = "Groupe fonctionel",
+    fill = "Groupe fonctionel"
   ) +
   theme_bw() +
   theme(
@@ -329,8 +333,8 @@ data_list = lapply(data_list, function(df) {
 data_vibrations = bind_rows(data_list)
 
 malettes = data.frame(
-  malette = c("40", "42", "43", "45"),
-  Placette = c("C", "B", "D", "A")
+  malette = c("43", "40", "42", "45"),
+  Placette = c("A", "B", "C", "D")
 )
 
 data_vibrations = left_join(
@@ -343,7 +347,7 @@ ggplot(data = data_vibrations)+
                   ymin = freq_sd_inf,
                   ymax = freq_sd_sup,
                   fill = Placette),
-              alpha = 0.4)+
+              alpha = 0.2)+
   geom_line(aes(x = freq_Hz,
                 y = freq_mean,
                 color = Placette))+
@@ -351,13 +355,16 @@ ggplot(data = data_vibrations)+
   scale_x_log10()+
   facet_wrap(~ direction)+
   labs(
-    x = "log10(frequence Hz)",
-    y = "Energie (log10(m/Hz)",
+    x = "Frequence (Hz)",
+    y = "Power spectral density ((m/s)²/Hz)",
     title = "Spectre de puissance des vibration terrestres des placettes"
   ) +
   theme_bw() +
   theme(
     strip.text = element_text(size = 12, face = "bold")
   )
+
+
+
 
 
